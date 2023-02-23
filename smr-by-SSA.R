@@ -12,15 +12,16 @@ library(purrr)
 ## SSURGO SDA
 
 # exclude STATSGO for now
-# will not include RSS
+# exclude AK for now
+# does not include RSS
 
-.ssa <- SDA_query("SELECT DISTINCT areasymbol FROM legend WHERE areasymbol != 'US';")
+.ssa <- SDA_query("SELECT DISTINCT areasymbol FROM legend WHERE areasymbol != 'US' AND areasymbol NOT LIKE 'AK%';")
 nrow(.ssa)
 
 # simple data getting function
 .getData <- function(i) {
   .sql <- sprintf("
-                  SELECT areasymbol AS ssa, co.mukey, co.cokey AS cokey, taxclname, taxsubgrp, taxmoistscl, taxmoistcl 
+                  SELECT areasymbol AS ssa, co.mukey, co.cokey AS cokey, comppct_r, taxclname, taxsubgrp, taxmoistscl, taxmoistcl 
                   FROM legend INNER JOIN mapunit ON legend.lkey = mapunit.lkey
                   INNER JOIN component AS co ON mapunit.mukey = co.mukey
                   LEFT JOIN cotaxmoistcl AS tx ON co.cokey = tx.cokey 
@@ -97,7 +98,13 @@ d$smr.final[.idx] <- d$smr[.idx]
 
 table(d$taxmoistcl, d$smr.final, useNA = 'always')
 
-# save for later
+# save full data set for later
+saveRDS(d, file = 'data/SSURGO-smr-data.rds')
+
+## single value per mukey
+
+
+
 
 
 
