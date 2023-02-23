@@ -1,18 +1,23 @@
+## Get SMR related info from SSURGO via SDA, by SSA
+## If only working with CONUS, then more efficient to use the gNATSGO tables
+
 library(soilDB)
 library(SoilTaxonomy)
 library(furrr)
 library(purrr)
 
-## TODO: alternative approach via gNATSGO tables
 
 
-## SSURGO + STATSGO via SDA
 
-.ssa <- SDA_query("SELECT DISTINCT areasymbol FROM legend;")
+## SSURGO SDA
+
+# exclude STATSGO for now
+# will not include RSS
+
+.ssa <- SDA_query("SELECT DISTINCT areasymbol FROM legend WHERE areasymbol != 'US';")
 nrow(.ssa)
 
-## TODO: trap errors / bad requests
-
+# simple data getting function
 .getData <- function(i) {
   .sql <- sprintf("
                   SELECT areasymbol AS ssa, co.mukey, co.cokey AS cokey, taxclname, taxsubgrp, taxmoistscl, taxmoistcl 
@@ -24,6 +29,11 @@ nrow(.ssa)
   
   x <- suppressMessages(SDA_query(.sql))
   
+  if(inherits(x, 'try-error')) {
+    print(i)
+    return(NULL)
+  }
+  
   return(x)
 }
 
@@ -33,29 +43,61 @@ z <- future_map(.ssa$areasymbol, .f = safely(.getData), .progress = TRUE)
 
 plan(sequential)
 
-z <- do.call('rbind', z)
 
-str(z)
-head(z, 20)
+
+
+## check for errors
+e <- lapply(z, pluck, 'error')
+idx <- which(!is.null(e))
+
+# AK600 may be too big, too many records?
+.ssa[idx, ]
+
+## results
+d <- lapply(z, pluck, 'result')
+
+# flatten
+d <- do.call('rbind', d)
+
+str(d)
+head(d, 20)
 
 
 ## extract SMR to unique values
-d <- data.frame(taxsubgrp = unique(na.omit(z$taxsubgrp)))
-nrow(d)
+sg <- data.frame(taxsubgrp = unique(na.omit(d$taxsubgrp)))
+nrow(sg)
 
-# ~ 18 seconds
-system.time(d$smr <- extractSMR(d$taxsubgrp))
+# ~ 15 seconds
+system.time(sg$smr <- extractSMR(sg$taxsubgrp))
 
 
 ## merge back into component data
-z <- merge(z, d, by = 'taxsubgrp', all.x = TRUE, sort = FALSE)
+d <- merge(d, sg, by = 'taxsubgrp', all.x = TRUE, sort = FALSE)
+
+# ok
+head(d)
+
+## compare
+table(d$taxmoistcl, d$taxmoistscl, useNA = 'always')
+
+table(d$taxmoistcl, d$smr, useNA = 'always')
 
 
-head(z)
+## develop rules for filling gaps
+missing.cl <- which(is.na(d$taxmoistcl))
+
+d[missing.cl[sample(1:length(missing.cl), size = 20)], ]
 
 
+# try filling missing smr class with formative-element derived values
+d$smr.final <- factor(d$taxmoistcl, levels = levels(d$smr), ordered = TRUE)
 
-## TODO
-## RSS via geodatabases
+.idx <- which(is.na(d$smr.final))
+d$smr.final[.idx] <- d$smr[.idx]
+
+table(d$taxmoistcl, d$smr.final, useNA = 'always')
+
+# save for later
+
 
 
