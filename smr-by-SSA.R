@@ -6,7 +6,8 @@ library(SoilTaxonomy)
 library(furrr)
 library(purrr)
 
-
+## TODO:
+# * keep track of KST edition
 
 
 ## SSURGO SDA
@@ -103,8 +104,40 @@ saveRDS(d, file = 'data/SSURGO-smr-data.rds')
 
 ## single value per mukey
 
+.aggregateSMR <- function(i) {
+  
+  # tabulate SMR
+  # implicit factor -> character conversion
+  .a <- tapply(i$comppct_r, i$smr.final, FUN = sum, na.rm = TRUE)
+  
+  # select the most frequent by component pct
+  .a <- sort(.a, decreasing = TRUE)
+  .smr <- names(.a)[1]
+  
+  # TODO
+  # test for NA, and use 2nd place
+  
+  .res <- data.frame(mukey = i$mukey[1], smr = .smr)
+  return(.res)
+}
 
+# TODO: implement with data.table (fast)
 
+# split + map = slow, but nice progress display
+s <- split(d, d$mukey)
+a <- map(s, .aggregateSMR, .progress = TRUE)
+a <- do.call('rbind', a)
+
+# re-apply factor details
+a$smr <- factor(a$smr, levels = levels(d$smr.final), ordered = TRUE)
+
+str(a)
+head(a)
+
+table(a$smr, useNA = 'always')
+
+## save
+saveRDS(a, file = 'data/SSURGO-smr-by-mukey.rds')
 
 
 
