@@ -12,14 +12,24 @@ There are several possible sources of error in these data:
   5. ???
 
 
+Still many missing values, tracking those down...
+![gNATSGO](figures/SSURGO-SMR.png)
 
-## SMR Extraction by Formative Element
 
+Note different color scheme.
+![STATSGO](figures/STASTGO-SMR.png)
+
+
+### SMR Extraction by Formative Element
 
 
 ## Newhall Simulation
+![Newhall simulation](Newhall/SMR-800-2deg-offset.png)
 
 
 ## SCAN/SNOTEL
+
+
+
 
 
