@@ -9,6 +9,8 @@ source('local-functions.R')
 
 ## TODO: can we use / abuse soilDB::summarizeSoilTemperature()
 
+## TODO: adapt to use cumulative PPT data when it is the only available source
+
 
 ## load data dump
 d <- readRDS('data/scan-dump.rds')
@@ -18,6 +20,7 @@ d <- readRDS('data/scan-dump.rds')
 # iterate over cached data, compute above / below ground summaries by month and season
 m <- map(d, .progress = TRUE, .f = .SCAN_MonthlyTempSummary)
 
+# extract pieces / flatten
 air <- do.call('rbind', map(m, pluck, 'air'))
 soil50cm <- do.call('rbind', map(m, pluck, 'soil50cm'))
 
@@ -37,5 +40,11 @@ head(p)
 saveRDS(air, file = 'data/station-monthly-mean-air-temp.rds')
 saveRDS(soil50cm, file = 'data/station-monthly-mean-soil50cm-temp.rds')
 saveRDS(p, file = 'data/station-monthly-total-ppt.rds')
+
+
+## cleanup
+rm(list = ls())
+gc(reset = TRUE)
+
 
 

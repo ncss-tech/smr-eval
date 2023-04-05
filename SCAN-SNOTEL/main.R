@@ -29,3 +29,6 @@ source('SMR-eval-Newhall-PRISM.R')
 
 
 
+##
+source('estimate-temp-offset.R')
+source('prepare-monthly-summaries.R')

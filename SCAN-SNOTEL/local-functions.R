@@ -124,7 +124,7 @@
   
   # re-name for Newhall and clarity
   names(.monthly)[-c(1:2)] <- sprintf("t%s", names(.monthly)[-c(1:2)])
-  # names(.seasonal)[-c(1:2)] <- c('MWST', 'MSpST', 'MSST', 'MFST')
+  names(.seasonal)[-c(1:2)] <- sprintf("t%s", names(.seasonal)[-c(1:2)])
   
   .g <- merge(.monthly, .seasonal, by = c('Site', 'year'), all.x = TRUE, sort = FALSE)
   .g <- merge(.g, .n, by = c('Site', 'year'), all.x = TRUE, sort = FALSE)
