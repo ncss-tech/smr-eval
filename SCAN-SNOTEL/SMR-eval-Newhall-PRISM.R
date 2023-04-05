@@ -10,9 +10,10 @@ library(venn)
 x <- readRDS('data/station-data-with-PRISM.rds')
 nh <- readRDS('data/station-prism-newhall-results.rds')
 
+
 # combine
 x <- merge(x, nh, by = 'Site', all.x = TRUE, sort = FALSE)
-
+x <- merge(x, o, by = 'Site', all.x = TRUE, sort = FALSE)
 
 ## normalize names
 

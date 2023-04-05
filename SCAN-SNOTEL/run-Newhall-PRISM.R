@@ -7,6 +7,10 @@ x <- readRDS('data/station-data-with-PRISM.rds')
 # SSURGO0-derived
 paws <- readRDS('data/SSURGO-paws.rds')
 
+## MAAT - MAST offsets, computed from sensor data when possible
+# bad data ore-filtered
+o <- readRDS('data/MAAT-MAST-offset.rds')
+
 
 ## launder names for Newhall batch
 x$latDD <- x$Latitude
@@ -33,11 +37,14 @@ x$awc[is.na(x$awc)] <- 150
 ## TODO: compute station-specific offsets
 
 ## setup station-specific MAAT -- MAST offset
-x$maatmast <- 2.5
+x <- merge(x, o, by = 'Site', all.x = TRUE, sort = FALSE)
+x$maatmast <- x$offset
+# back-fill with estimate
+x$maatmast[is.na(x$maatmast)] <- 2.5
 
 
 ## simulation with default MAAT - MAST offset
-# 1 second
+# < 1 second
 nh <- newhall_batch(x, unitSystem = 'metric', toString = FALSE)
 
 # sanity check
