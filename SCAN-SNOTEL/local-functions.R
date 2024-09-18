@@ -17,7 +17,7 @@
 
 ## TODO: deal with multiple sensors
 ## TODO: adapt to use PREC (cumulative) data when PRCP not available
-## TODO: maybe incliude annual aggregate
+## TODO: maybe include annual aggregate
 
 # use PRCP data, native units are inches
 # x: single list of SCAN data
